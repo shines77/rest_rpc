@@ -249,6 +249,7 @@ void test_rpc_call_qps()
             
 		std::thread thd([&io_service] { io_service.run(); });
 		std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
         sw.start();
 		while (true)
 		{
@@ -261,6 +262,8 @@ void test_rpc_call_qps()
                 }
             }
 		}
+        if (thd.joinable())
+            thd.join();
 	}
 	catch (const std::exception& e)
 	{
@@ -270,7 +273,7 @@ void test_rpc_call_qps()
 
 void test_rpc_call_throughput()
 {
-    static const uint32_t repeat_times = 100;
+    static const uint32_t repeat_times = 200;
 	try
 	{
         int n_rpc_topic = -1;
@@ -302,6 +305,9 @@ void test_rpc_call_throughput()
         }
         client.connect(g_server_ip, g_server_port);
 
+        std::thread thd([&io_service] { io_service.run(); });
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
         sw.start();
         std::string result;
         int sum = 0;
@@ -315,6 +321,8 @@ void test_rpc_call_throughput()
                 }
             }
         }
+        if (thd.joinable())
+            thd.join();
 	}
 	catch (const std::exception& e)
 	{
