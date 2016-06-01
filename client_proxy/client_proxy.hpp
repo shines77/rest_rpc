@@ -84,6 +84,26 @@ public:
 		return recv_json;
 	}
 
+	std::string call(const std::string& json_str, int repeat, int & sum)
+	{
+		int len = json_str.length();
+        sum = 0;
+        for (int i = 0; i < repeat; ++i) {
+		    bool r = send(json_str);
+		    if (!r)
+			    throw std::runtime_error("call failed");
+        }
+		
+        std::string recv_json;
+        for (int i = 0; i < repeat; ++i) {
+		    socket_.receive(boost::asio::buffer(&len, HEAD_LEN));
+		    recv_json.resize(len);
+		    socket_.receive(boost::asio::buffer(&recv_json[0], len));
+            sum += recv_json.length();
+        }
+		return recv_json;
+	}
+
 	template<typename HandlerT>
 	void async_call(const std::string& json_str, HandlerT handler)
 	{
@@ -280,7 +300,7 @@ private:
 		}
 
 		boost::asio::async_connect(socket_, endpoint_iterator,
-			[handler](boost::system::error_code ec, tcp::resolver::iterator) mutable
+			[handler](const boost::system::error_code & ec, tcp::resolver::iterator) mutable
 		{
 			handler(ec);
 		});
