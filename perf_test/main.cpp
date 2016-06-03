@@ -30,13 +30,10 @@ int g_test_category = 0;
 
 std::string g_test_mode_str;
 std::string g_test_category_str;
+std::string g_rpc_topic;
 
 std::string g_server_ip;
 std::string g_server_port;
-std::string g_client_ip;
-std::string g_client_port;
-
-std::string g_rpc_topic;
 
 // result要么是基本类型，要么是结构体；当请求成功时，code为0, 如果请求是无返回类型的，则result为空; 
 // 如果是有返回值的，则result为返回值。response_msg会序列化为一个标准的json串，回发给客户端。 
@@ -81,6 +78,8 @@ int get_test_category(const std::string & test_category)
         n_test_category = test_cate_qps;
     else if (test_category == "throughput")
         n_test_category = test_cate_throughput;
+    else if (test_category == "async_qps")
+        n_test_category = test_cate_async_qps;
     return n_test_category;
 }
 
@@ -330,7 +329,7 @@ void test_rpc_call_throughput()
 	}
 }
 
-void test_rpc_call_throughput2()
+void test_rpc_async_call_qps()
 {
 	try
 	{
@@ -398,7 +397,7 @@ void test_rpc_call_throughput2()
 int main(int argc, char * argv[])
 {
     std::string app_name, test_category, test_mode, rpc_topic;
-    std::string client_ip, client_port, server_ip, server_port;
+    std::string server_ip, server_port;
 
     app_opts::options_description desc("Command list");
     desc.add_options()
@@ -406,10 +405,8 @@ int main(int argc, char * argv[])
         ("mode,m", app_opts::value<std::string>(&test_category)->default_value("rpc-call"), "test mode")
         ("test,t", app_opts::value<std::string>(&test_mode)->default_value("qps"), "test category")
         ("rpc-topic,r", app_opts::value<std::string>(&rpc_topic)->default_value("add"), "rpc call's topic")
-        ("server-ip,s", app_opts::value<std::string>(&server_ip)->default_value("127.0.0.1"), "server ip address")
-        ("server-port,o", app_opts::value<std::string>(&server_port)->default_value("9000"), "server port")
-        ("ip,i", app_opts::value<std::string>(&client_ip)->default_value("127.0.0.1"), "client ip address")
-        ("port,p", app_opts::value<std::string>(&client_port)->default_value("9010"), "client port")
+        ("host,s", app_opts::value<std::string>(&server_ip)->default_value("127.0.0.1"), "server host or ip address")
+        ("port,p", app_opts::value<std::string>(&server_port)->default_value("9000"), "server port")
         ;
 
     app_opts::variables_map vars_map;
@@ -450,17 +447,18 @@ int main(int argc, char * argv[])
 
     g_server_ip = server_ip;
     g_server_port = server_port;
-    g_client_ip = client_ip;
-    g_client_port = client_port;    
 
     if (g_test_mode == test_mode_rpc_call) {
         if (g_test_category == test_cate_qps)
             test_rpc_call_qps();
         else if (g_test_category == test_cate_throughput)
             test_rpc_call_throughput();
+        else if (g_test_category == test_cate_async_qps)
+            test_rpc_async_call_qps();
     }
     else if (g_test_mode == test_mode_sub_pub) {
-        //
+        //if (g_test_category == test_cate_sub)
+        //  test_subpub_sub();
     }
     else {
         test_client();
