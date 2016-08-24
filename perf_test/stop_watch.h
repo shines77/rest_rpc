@@ -24,7 +24,7 @@ private:
 	double total_elapsed_time_;
 
 public:
-    StopWatch() : total_elapsed_time_(0.0), interval_time_{0} {};
+    StopWatch() : interval_time_{0}, total_elapsed_time_(0.0) {};
     ~StopWatch() {};
 
 	void reset() {
