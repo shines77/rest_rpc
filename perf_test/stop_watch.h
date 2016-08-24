@@ -84,9 +84,11 @@ public:
 		total_elapsed_time_ += elapsed_time;
 	}
 
-    double now() const {
+    static double now() {
+        COMPILER_BARRIER();
         std::chrono::duration<double> _now = std::chrono::duration_cast< std::chrono::duration<double> >
                                             (std::chrono::high_resolution_clock::now() - base_time_);
+        COMPILER_BARRIER();
         return _now.count();
     }
    
@@ -147,7 +149,8 @@ private:
     bool running_;
 
 public:
-    StopWatch_v2() : start_time_(0), stop_time_(0), interval_time_(0.0), total_elapsed_time_(0.0), running_(false) {};
+    StopWatch_v2() : start_time_(0), stop_time_(0), interval_time_(0.0),
+                     total_elapsed_time_(0.0), running_(false) {};
     ~StopWatch_v2() {};
 
 	void reset() {
@@ -197,8 +200,11 @@ public:
 		total_elapsed_time_ += elapsed_time;
 	}
 
-    double now() const {
-        return timeGetTime();
+    static double now() {
+        COMPILER_BARRIER();
+        double _now = static_cast<double>(timeGetTime()) / 1000.0;
+        COMPILER_BARRIER();
+        return _now;
     }
     
     double getIntervalTime() {
